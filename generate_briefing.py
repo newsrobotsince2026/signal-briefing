@@ -4,7 +4,7 @@ import re
 import os
 from datetime import datetime
 
-GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
+OPENROUTER_API_KEY = os.environ["OPENROUTER_API_KEY"]
 OUTPUT_FILE = "index.html"
 
 def build_prompt():
@@ -12,16 +12,22 @@ def build_prompt():
     return "You are SIGNAL, a bilingual (English & Mandarin Chinese) senior international news analyst. Today is " + today + ". Find the MOST SIGNIFICANT real international news stories from the past 7 days. Return ONLY a raw valid JSON object. No markdown, no backticks, no explanation. Start with { and end with }. Use this exact format: { \"politics\": [ { \"rank\": 1, \"headline_en\": \"English headline\", \"headline_zh\": \"中文标题\", \"region\": \"REGION\", \"body_en\": \"3-4 sentences.\", \"body_zh\": \"3-4句。\", \"significance_en\": \"1-2 sentences.\", \"significance_zh\": \"1-2句。\", \"links\": [ {\"type\": \"source\", \"label\": \"Outlet - Title\", \"url\": \"https://url.com\"} ] } ], \"business\": [], \"technology\": [], \"conflict\": [] }. RULES: Each section must have 6 to 8 stories. All URLs must be real. Chinese must be fluent Simplified Chinese. No Chinese curly quotes in JSON."
 
 def fetch_briefing():
-    print("Calling Gemini API...")
-    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + GEMINI_API_KEY
-    payload = {
-        "contents": [{"parts": [{"text": build_prompt()}]}],
-        "tools": [{"google_search": {}}]
+    print("Calling OpenRouter API...")
+    url = "https://openrouter.ai/api/v1/chat/completions"
+    headers = {
+        "Authorization": "Bearer " + OPENROUTER_API_KEY,
+        "Content-Type": "application/json"
     }
-    response = requests.post(url, json=payload, timeout=120)
+    payload = {
+        "model": "meta-llama/llama-3.3-70b-instruct:free",
+        "messages": [
+            {"role": "user", "content": build_prompt()}
+        ]
+    }
+    response = requests.post(url, headers=headers, json=payload, timeout=120)
     response.raise_for_status()
     data = response.json()
-    full_text = data["candidates"][0]["content"]["parts"][-1]["text"]
+    full_text = data["choices"][0]["message"]["content"]
     clean = full_text.replace("```json", "").replace("```", "").strip()
     match = re.search(r'\{[\s\S]*\}', clean)
     if not match:
