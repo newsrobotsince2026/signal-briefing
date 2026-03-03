@@ -13,7 +13,7 @@ def build_prompt():
 
 def fetch_briefing():
     print("Calling Gemini API...")
-    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=" + GEMINI_API_KEY
+    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + GEMINI_API_KEY
     payload = {
         "contents": [{"parts": [{"text": build_prompt()}]}],
         "tools": [{"google_search": {}}]
