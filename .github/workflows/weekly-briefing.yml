@@ -23,7 +23,7 @@ jobs:
 
       - name: Generate weekly briefing
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: python generate_briefing.py
 
       - name: Commit and push updated briefing
